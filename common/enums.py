@@ -12,6 +12,11 @@ class ConsumerType(Enum):
     AT = 7 # High Voltage
     ATT = 8 
 
+class ShiftType(Enum):
+    '''time slots for energy consumption'''
+    F1 = 'F1'
+    F2 = 'F2'
+    F3 = 'F3'
 
 class ConcessionsType(Enum):
     NO_CONCESSIONS = 0 # nessuna agevolazione
