@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 import pandas as pd
 from pydantic import BaseModel
 
@@ -7,7 +7,7 @@ from common.enums import ConsumerType
 
 class ElectricityBillSystemCosts(BaseModel):
     consumer_type: int
-    consumption_kwh: float
+    consumption_kwh: List[float]  # [F1, F2, F3]
     contracted_power_kW: float
     voltage_kv: Optional[float] = None
     # ------ TARIFFE DI RETE in cent/kWh ------
@@ -48,6 +48,10 @@ class ElectricityBillSystemCosts(BaseModel):
     @property
     def consumer_type_enum(self) -> ConsumerType:
         return ConsumerType(self.consumer_type) 
+    
+    def _get_total_consumption_kwh(self, consumption_kwh: list[float]) -> float:
+        return sum(consumption_kwh)
+    
     
     def _get_sigma_1(self) -> float:
         return self.sigma_1 * 1/12
@@ -139,53 +143,63 @@ class ElectricityBillSystemCosts(BaseModel):
         return self.per_kw_costs_uc6 * contracted_power_kW * 1/12
     
 
-    def _get_sigma_3(self, consumption_kwh) -> float:
-        return self.sigma_3  * consumption_kwh
+    def _get_sigma_3(self, consumption_kwh: list[float]) -> float:
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return self.sigma_3 * total_kwh
     
-    def _get_per_kwh_costs(self, consumption_kwh):
+    def _get_per_kwh_costs(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs is None or pd.isna(self.per_kwh_costs):
             return 0
-        return (self.per_kwh_costs / 100) * consumption_kwh 
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs / 100) * total_kwh
     
-    def _get_per_kwh_costs_class_0(self, consumption_kwh):
+    def _get_per_kwh_costs_class_0(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_class_0 is None or pd.isna(self.per_kwh_costs_class_0):
             return 0
-        return (self.per_kwh_costs_class_0 / 100) * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs_class_0 / 100) * total_kwh
 
-    def _get_per_kwh_costs_asos_1(self, consumption_kwh):
+    def _get_per_kwh_costs_asos_1(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_asos_1 is None or pd.isna(self.per_kwh_costs_asos_1):
             return 0
-        return (self.per_kwh_costs_asos_1 / 100) * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs_asos_1 / 100) * total_kwh
 
-    def _get_per_kwh_costs_asos_2(self, consumption_kwh):
+    def _get_per_kwh_costs_asos_2(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_asos_2 is None or pd.isna(self.per_kwh_costs_asos_2):
             return 0
-        return (self.per_kwh_costs_asos_2 / 100) * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs_asos_2 / 100) * total_kwh
 
-    def _get_per_kwh_costs_asos_3(self, consumption_kwh):
+    def _get_per_kwh_costs_asos_3(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_asos_3 is None or pd.isna(self.per_kwh_costs_asos_3):
             return 0
-        return (self.per_kwh_costs_asos_3 / 100) * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs_asos_3 / 100) * total_kwh
 
-    def _get_per_kwh_costs_val(self, consumption_kwh):
+    def _get_per_kwh_costs_val(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_val is None or pd.isna(self.per_kwh_costs_val):
             return 0
-        return (self.per_kwh_costs_val / 100) * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs_val / 100) * total_kwh
 
-    def _get_per_kwh_costs_arim(self, consumption_kwh):
+    def _get_per_kwh_costs_arim(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_arim is None or pd.isna(self.per_kwh_costs_arim):
             return 0
-        return (self.per_kwh_costs_arim / 100) * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return (self.per_kwh_costs_arim / 100) * total_kwh
     
-    def _get_per_kwh_costs_uc3(self, consumption_kwh):
+    def _get_per_kwh_costs_uc3(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_uc3 is None or pd.isna(self.per_kwh_costs_uc3):
             return 0
-        return self.per_kwh_costs_uc3 * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return self.per_kwh_costs_uc3 * total_kwh
 
-    def _get_per_kwh_costs_uc6(self, consumption_kwh):
+    def _get_per_kwh_costs_uc6(self, consumption_kwh: list[float]) -> float:
         if self.per_kwh_costs_uc6 is None or pd.isna(self.per_kwh_costs_uc6):
             return 0
-        return self.per_kwh_costs_uc6 * consumption_kwh
+        total_kwh = self._get_total_consumption_kwh(consumption_kwh)
+        return self.per_kwh_costs_uc6 * total_kwh
     
 
     def calculate_electricity_bill_system_costs( 
@@ -207,7 +221,8 @@ class ElectricityBillSystemCosts(BaseModel):
             elif consumer_type not in [2, 3, 5]: # PUBLIC_LIGHTING (BT/MT) and PUBLIC_CHARGING_INFRASTRUCTURES_FOR_ELECTRIC_VEHICLES
                 apply_loss_factors = True
                 if consumer_type == 4:
-                    if contracted_power_kW > 16.5: # perchè?
+                    if contracted_power_kW > 16.5: 
+                        # consumatore speciale o industriale, alcune tariffe di rete potrebbero non applicarsi o essere pagate indirettamente
                         apply_loss_factors = False
                 if apply_loss_factors:
                     # ------ FATTORI DI PERDITA ------
